@@ -1,6 +1,6 @@
 # CognitiveMirror-Jev-MCP
 
-![version](https://img.shields.io/badge/version-1.0.0-blue)
+![version](https://img.shields.io/badge/version-1.1.0-blue)
 ![tests](https://img.shields.io/badge/tests-passing-brightgreen)
 ![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![lint](https://img.shields.io/badge/ruff-clean-brightgreen)
@@ -166,6 +166,7 @@ and [`test_results.md`](test_results.md).
 |---|---|---|
 | `CM_DEPLOYMENT_MODE` | `local` | `local` / `private_cloud` / `enterprise` (enterprise refuses dev keys) |
 | `CM_DB_PATH` | `data/cognitive_mirror.db` | SQLite: memory, audit, shared context, approvals |
+| `CM_DATABASE_URL` | — | Optional PostgreSQL backend (`postgresql://…`, takes precedence over SQLite) |
 | `CM_API_KEYS` | dev keys | `<key>:<agent\|admin\|compliance>` pairs |
 | `CM_REQUIRE_AUTH` | `true` | Require API keys on REST |
 | `CM_POLICY_PROFILE` | `default` | `default` / `strict` / `enterprise` |
@@ -210,6 +211,16 @@ docker run -d -p 8000:8000 -e CM_API_KEYS=... -v cm-data:/app/data \
 ```
 
 Health: `GET /health` · Smoke: `tools/compose_smoke.sh` · Data persists in the `cm-data` volume.
+
+PostgreSQL instead of SQLite:
+
+```bash
+CM_DATABASE_URL=postgresql://cm:cm@db:5432/cm docker compose --profile postgres up -d --build --wait
+```
+
+CI (`.github/workflows/ci.yml`) runs the unit suite with the 100% gate,
+e2e/perf/postgres, Ruff, schema check, and a full Docker build + smoke on every
+push and pull request. Changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

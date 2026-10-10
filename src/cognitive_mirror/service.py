@@ -221,8 +221,9 @@ class Service:
             if row is None:
                 # check existence under another subject
                 with self.store._connect() as conn:
-                    other = conn.execute("SELECT subject_id,expires_at FROM memories WHERE ref=?",
-                                         (ref,)).fetchone()
+                    other = self.store._exec(
+                        conn, "SELECT subject_id,expires_at FROM memories WHERE ref=?",
+                        (ref,)).fetchone()
                 if other is None:
                     out.append(ResolvedMemory(ref, "missing", "", 0.0, None))
                 else:
