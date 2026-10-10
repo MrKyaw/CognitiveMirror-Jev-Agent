@@ -20,7 +20,8 @@ ROLE = "agent"
 def configure(settings: Settings | None = None) -> FastMCP:
     global SERVICE, ROLE
     settings = settings or get_settings()
-    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes)
+    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes,
+                  settings.database_url)
     lexicon = load_lexicon(str(settings.jev_config_path) if settings.jev_config_path else None)
     SERVICE = Service(settings, store, lexicon)
     ROLE = settings.stdio_role

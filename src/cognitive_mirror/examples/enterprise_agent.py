@@ -1,6 +1,8 @@
 """Enterprise decision assistant demo: decision -> impact -> guardrail."""
 from __future__ import annotations
 
+import os
+
 from cognitive_mirror.config import load_settings
 from cognitive_mirror.engine.lexicons import load_lexicon
 from cognitive_mirror.service import Service
@@ -8,8 +10,9 @@ from cognitive_mirror.store import Store
 
 
 def run_demo(db_path: str = ":memory:") -> dict:
-    settings = load_settings({"CM_DB_PATH": db_path})
-    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes)
+    settings = load_settings({**dict(os.environ), "CM_DB_PATH": db_path})
+    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes,
+                  settings.database_url)
     service = Service(settings, store, load_lexicon())
     trace = "tr_demo_enterprise"
     decision = service.call("frame_decision", {

@@ -1,4 +1,4 @@
-.PHONY: venv test e2e perf eval report report-full schemas serve mcp mcp-http demo lint \
+.PHONY: venv test e2e perf postgres-test eval report report-full schemas serve mcp mcp-http demo lint \
 	up down logs docker-build compose-smoke container-test
 
 export PYTHONPATH := $(CURDIR)/src$(if $(PYTHONPATH),:$(PYTHONPATH))
@@ -16,6 +16,9 @@ e2e:
 
 perf:
 	$(PY) -m pytest -q -m perf
+
+postgres-test:
+	$(PY) -m pytest -q -m postgres
 
 eval:
 	$(PY) -m pytest -q -m eval -s

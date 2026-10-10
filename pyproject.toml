@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cognitive-mirror-jev-mcp"
-version = "1.0.0"
+version = "1.1.0"
 description = "MCP server providing cognitive mirroring, Jev context intelligence, decision framing, business impact and guardrails for personal and enterprise agents"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -17,6 +17,7 @@ dependencies = [
   "httpx>=0.27",
   "jsonschema>=4.21",
   "typesafe-sdk>=0.7,<1",
+  "psycopg[binary]>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -36,10 +37,11 @@ cognitive_mirror = ["ui.html", "config/*.json", "config/policies/*.json", "schem
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "-m 'not perf and not container'"
+addopts = "-m 'not perf and not container and not postgres'"
 markers = [
   "e2e: PRD workflow and MCP discovery tests (run with -m e2e)",
   "perf: latency/concurrency tests against PRD NFR targets (run with -m perf)",
+  "postgres: live PostgreSQL tests, need CM_TEST_POSTGRES_URL (run with -m postgres)",
   "property: Hypothesis property-based tests",
   "eval: evaluation harness against labeled datasets (PRD success metrics)",
   "container: tests against the running Docker container (run with -m container)",

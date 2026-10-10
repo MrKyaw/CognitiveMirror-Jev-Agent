@@ -40,7 +40,8 @@ def _role_from_headers(settings: Settings, x_api_key: str | None,
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes)
+    store = Store(settings.db_path, settings.retention_days, settings.shared_context_ttl_minutes,
+                  settings.database_url)
     lexicon = load_lexicon(str(settings.jev_config_path) if settings.jev_config_path else None)
     service = Service(settings, store, lexicon)
     app = FastAPI(title="CognitiveMirror-Jev-MCP", version=__version__)

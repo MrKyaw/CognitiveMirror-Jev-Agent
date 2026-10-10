@@ -25,6 +25,7 @@ class ConfigError(ValueError):
 class Settings:
     deployment_mode: str = "local"
     db_path: Path = Path("data/cognitive_mirror.db")
+    database_url: str = ""
     api_keys: Mapping[str, str] = field(default_factory=dict)
     require_auth: bool = True
     stdio_role: str = "agent"
@@ -89,6 +90,9 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     jev_cfg = env.get("CM_JEV_CONFIG")
     if jev_cfg and not Path(jev_cfg).exists():
         raise ConfigError(f"CM_JEV_CONFIG file not found: {jev_cfg}")
+    db_url = env.get("CM_DATABASE_URL", "").strip()
+    if db_url and not db_url.startswith("postgres"):
+        raise ConfigError("CM_DATABASE_URL must be a postgresql:// URL")
     try:
         retention = int(env.get("CM_RETENTION_DAYS", "30"))
         shared_ttl = int(env.get("CM_SHARED_CONTEXT_TTL_MINUTES", "240"))
@@ -101,6 +105,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     return Settings(
         deployment_mode=mode,
         db_path=Path(env.get("CM_DB_PATH", "data/cognitive_mirror.db")),
+        database_url=db_url,
         api_keys=keys,
         require_auth=require_auth,
         stdio_role=stdio_role,

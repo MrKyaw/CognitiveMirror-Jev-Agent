@@ -10,6 +10,7 @@ services:
     environment:
       CM_DEPLOYMENT_MODE: ${CM_DEPLOYMENT_MODE:-local}
       CM_DB_PATH: data/cognitive_mirror.db
+      CM_DATABASE_URL: ${CM_DATABASE_URL:-}
       CM_API_KEYS: ${CM_API_KEYS:-dev-agent-key:agent,dev-admin-key:admin,dev-compliance-key:compliance}
       CM_REQUIRE_AUTH: "true"
       CM_POLICY_PROFILE: ${CM_POLICY_PROFILE:-default}
@@ -21,5 +22,24 @@ services:
       timeout: 5s
       retries: 3
 
+  # Optional PostgreSQL backend (PRD Phase 2 readiness):
+  #   docker compose --profile postgres up -d --build --wait
+  #   CM_DATABASE_URL=postgresql://cm:cm@db:5432/cm docker compose --profile postgres up
+  db:
+    image: postgres:16
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: cm
+      POSTGRES_PASSWORD: cm
+      POSTGRES_DB: cm
+    volumes:
+      - cm-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   cm-data:
+  cm-pgdata:
