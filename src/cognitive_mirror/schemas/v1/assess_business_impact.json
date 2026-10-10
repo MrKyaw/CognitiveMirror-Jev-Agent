@@ -1,0 +1,269 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/assess_business_impact.json",
+  "description": "Maps a request or action to measurable business value: impact category, expected benefits, metrics with baseline and expected delta, cost or effort, an ROI hypothesis and a 0-100 priority score.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "baseline": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "description": "Known baseline values, e.g. {'hours_per_week': 6}",
+        "maxProperties": 30,
+        "title": "Baseline",
+        "type": "object"
+      },
+      "request": {
+        "maxLength": 10000,
+        "minLength": 1,
+        "title": "Request",
+        "type": "string"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "stakeholders": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Stakeholders",
+        "type": "array"
+      },
+      "target_workflow": {
+        "anyOf": [
+          {
+            "maxLength": 500,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Target Workflow"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "required": [
+      "request"
+    ],
+    "title": "AssessBusinessImpactInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "assess_business_impact",
+  "output": {
+    "$defs": {
+      "CostOrEffort": {
+        "additionalProperties": false,
+        "properties": {
+          "drivers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Drivers",
+            "type": "array"
+          },
+          "estimate": {
+            "title": "Estimate",
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Level",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "estimate",
+          "drivers"
+        ],
+        "title": "CostOrEffort",
+        "type": "object"
+      },
+      "ImpactMetric": {
+        "additionalProperties": false,
+        "properties": {
+          "baseline": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "evidence": {
+            "title": "Evidence",
+            "type": "string"
+          },
+          "expected_delta": {
+            "title": "Expected Delta",
+            "type": "string"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          }
+        },
+        "required": [
+          "metric",
+          "baseline",
+          "expected_delta",
+          "target",
+          "confidence",
+          "evidence"
+        ],
+        "title": "ImpactMetric",
+        "type": "object"
+      },
+      "StakeholderImpact": {
+        "additionalProperties": false,
+        "properties": {
+          "impact": {
+            "title": "Impact",
+            "type": "string"
+          },
+          "stakeholder": {
+            "title": "Stakeholder",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stakeholder",
+          "impact"
+        ],
+        "title": "StakeholderImpact",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "cost_or_effort": {
+        "$ref": "#/$defs/CostOrEffort"
+      },
+      "expected_benefits": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Expected Benefits",
+        "type": "array"
+      },
+      "impact_category": {
+        "title": "Impact Category",
+        "type": "string"
+      },
+      "metrics": {
+        "items": {
+          "$ref": "#/$defs/ImpactMetric"
+        },
+        "title": "Metrics",
+        "type": "array"
+      },
+      "priority_score": {
+        "maximum": 100,
+        "minimum": 0,
+        "title": "Priority Score",
+        "type": "integer"
+      },
+      "roi_hypothesis": {
+        "title": "Roi Hypothesis",
+        "type": "string"
+      },
+      "secondary_categories": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Secondary Categories",
+        "type": "array"
+      },
+      "stakeholder_impact": {
+        "items": {
+          "$ref": "#/$defs/StakeholderImpact"
+        },
+        "title": "Stakeholder Impact",
+        "type": "array"
+      }
+    },
+    "required": [
+      "impact_category",
+      "secondary_categories",
+      "expected_benefits",
+      "metrics",
+      "cost_or_effort",
+      "roi_hypothesis",
+      "priority_score",
+      "stakeholder_impact"
+    ],
+    "title": "AssessBusinessImpactOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Assess business impact",
+  "tool_version": "1.0.0"
+}

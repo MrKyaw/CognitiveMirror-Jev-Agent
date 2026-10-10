@@ -1,0 +1,11 @@
+{
+  "name": "enterprise",
+  "description": "Enterprise governance: also blocks sharing personal data externally without consent and requires approval for any personal data use or medium-risk action.",
+  "block": ["manipulation", "credential_exposure", "security_bypass", "pii_external_share"],
+  "require_approval": [
+    "external_action", "irreversible_action", "financial_action", "high_impact_communication",
+    "regulated_advice", "special_category_data", "pii_external_share", "bulk_data", "pii"
+  ],
+  "approval_risk_threshold": "medium",
+  "severity_overrides": {"external_action": "high"}
+}

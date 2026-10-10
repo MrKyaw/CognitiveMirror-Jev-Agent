@@ -1,0 +1,111 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/record_feedback.json",
+  "description": "Records the outcome and a 1-5 rating for a previous tool call (by request_id) for evaluation and improvement.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "comment": {
+        "default": "",
+        "maxLength": 2000,
+        "title": "Comment",
+        "type": "string"
+      },
+      "outcome": {
+        "default": "unknown",
+        "enum": [
+          "accepted",
+          "edited",
+          "rejected",
+          "unknown"
+        ],
+        "title": "Outcome",
+        "type": "string"
+      },
+      "rating": {
+        "maximum": 5,
+        "minimum": 1,
+        "title": "Rating",
+        "type": "integer"
+      },
+      "request_id": {
+        "pattern": "^req_[0-9a-f]{32}$",
+        "title": "Request Id",
+        "type": "string"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      },
+      "useful": {
+        "default": true,
+        "title": "Useful",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "request_id",
+      "rating"
+    ],
+    "title": "RecordFeedbackInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "record_feedback",
+  "output": {
+    "additionalProperties": false,
+    "properties": {
+      "feedback_id": {
+        "title": "Feedback Id",
+        "type": "string"
+      },
+      "recorded": {
+        "title": "Recorded",
+        "type": "boolean"
+      },
+      "request_found": {
+        "title": "Request Found",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "recorded",
+      "feedback_id",
+      "request_found"
+    ],
+    "title": "RecordFeedbackOutput",
+    "type": "object"
+  },
+  "read_only": false,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Record feedback",
+  "tool_version": "1.0.0"
+}

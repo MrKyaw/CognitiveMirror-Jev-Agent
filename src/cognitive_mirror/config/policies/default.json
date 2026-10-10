@@ -1,0 +1,11 @@
+{
+  "name": "default",
+  "description": "Personal-agent baseline: block manipulation and credential exposure; require human approval for external, irreversible, financial, high-impact, regulated-advice and sensitive-data actions.",
+  "block": ["manipulation", "credential_exposure", "security_bypass"],
+  "require_approval": [
+    "external_action", "irreversible_action", "financial_action", "high_impact_communication",
+    "regulated_advice", "special_category_data", "pii_external_share", "bulk_data"
+  ],
+  "approval_risk_threshold": "high",
+  "severity_overrides": {}
+}

@@ -1,0 +1,262 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/recommend_next_action.json",
+  "description": "Recommends the next best agent action from the intent summary (text or the mirror_user_intent result), Jev profile, business goal, risk level, available tools and guardrail result. Returns an executable agent_instruction, alternatives, business impact, risks and whether human approval is required.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "available_tools": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 100,
+        "title": "Available Tools",
+        "type": "array"
+      },
+      "business_goal": {
+        "anyOf": [
+          {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Business Goal"
+      },
+      "guardrail_result": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Result of check_guardrails for the planned workflow",
+        "title": "Guardrail Result"
+      },
+      "intent_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "additionalProperties": true,
+            "type": "object"
+          }
+        ],
+        "default": "",
+        "description": "Text summary or the result of mirror_user_intent",
+        "title": "Intent Summary"
+      },
+      "jev_profile": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Result of build_jev_profile, if available",
+        "title": "Jev Profile"
+      },
+      "risk_level": {
+        "anyOf": [
+          {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Risk Level"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "RecommendNextActionInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "recommend_next_action",
+  "output": {
+    "$defs": {
+      "Action": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool"
+          },
+          "type": {
+            "enum": [
+              "clarify",
+              "draft",
+              "plan",
+              "research",
+              "schedule",
+              "communicate",
+              "decide",
+              "reflect",
+              "recall",
+              "escalate",
+              "summarize",
+              "explain"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "type",
+          "tool",
+          "description"
+        ],
+        "title": "Action",
+        "type": "object"
+      },
+      "ImpactSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "summary",
+          "metric"
+        ],
+        "title": "ImpactSummary",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "agent_instruction": {
+        "title": "Agent Instruction",
+        "type": "string"
+      },
+      "alternative_actions": {
+        "items": {
+          "$ref": "#/$defs/Action"
+        },
+        "title": "Alternative Actions",
+        "type": "array"
+      },
+      "approval_reason": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Approval Reason"
+      },
+      "business_impact": {
+        "$ref": "#/$defs/ImpactSummary"
+      },
+      "human_approval_required": {
+        "title": "Human Approval Required",
+        "type": "boolean"
+      },
+      "recommended_action": {
+        "$ref": "#/$defs/Action"
+      },
+      "risks": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Risks",
+        "type": "array"
+      }
+    },
+    "required": [
+      "recommended_action",
+      "alternative_actions",
+      "business_impact",
+      "risks",
+      "human_approval_required",
+      "approval_reason",
+      "agent_instruction"
+    ],
+    "title": "RecommendNextActionOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Recommend next action",
+  "tool_version": "1.0.0"
+}

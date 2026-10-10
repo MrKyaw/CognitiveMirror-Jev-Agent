@@ -1,0 +1,143 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/get_shared_context.json",
+  "description": "Returns the cognitive context published under session_id by other agents' tool calls, so specialist agents can share intent, Jev and decision context.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "GetSharedContextInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "get_shared_context",
+  "output": {
+    "$defs": {
+      "SharedEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "caller_role": {
+            "title": "Caller Role",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "result": {
+            "additionalProperties": true,
+            "title": "Result",
+            "type": "object"
+          },
+          "tool": {
+            "title": "Tool",
+            "type": "string"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tool",
+          "request_id",
+          "trace_id",
+          "caller_role",
+          "agent_id",
+          "created_at",
+          "result"
+        ],
+        "title": "SharedEntry",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "entries": {
+        "items": {
+          "$ref": "#/$defs/SharedEntry"
+        },
+        "title": "Entries",
+        "type": "array"
+      },
+      "latest_by_tool": {
+        "additionalProperties": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Latest By Tool",
+        "type": "object"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Session Id"
+      }
+    },
+    "required": [
+      "session_id",
+      "entries",
+      "latest_by_tool"
+    ],
+    "title": "GetSharedContextOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent",
+    "compliance"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Get shared context",
+  "tool_version": "1.0.0"
+}

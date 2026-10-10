@@ -1,0 +1,90 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/memory_forget.json",
+  "description": "Deletes one memory item, or (admin only) every item for a subject.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "ref": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Omit to forget everything for subject (admin role required)",
+        "title": "Ref"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "subject_id": {
+        "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+        "title": "Subject Id",
+        "type": "string"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "required": [
+      "subject_id"
+    ],
+    "title": "MemoryForgetInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "memory_forget",
+  "output": {
+    "additionalProperties": false,
+    "properties": {
+      "deleted": {
+        "title": "Deleted",
+        "type": "integer"
+      },
+      "subject_id": {
+        "title": "Subject Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "deleted",
+      "subject_id"
+    ],
+    "title": "MemoryForgetOutput",
+    "type": "object"
+  },
+  "read_only": false,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Forget memory",
+  "tool_version": "1.0.0"
+}

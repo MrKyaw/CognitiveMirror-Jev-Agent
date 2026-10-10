@@ -1,0 +1,514 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/mirror_user_intent.json",
+  "description": "Call FIRST for every new user request. Converts the raw message into structured intent, explicit and implicit goals, constraints, urgency, ambiguities with clarification questions, goal conflicts, decision style, a plain-language mirror summary, business outcomes, and a recommended response strategy (clarify_first | act | act_with_confirmation | reflect | escalate). Pass available_memory_refs instead of raw sensitive history.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "agent_goal": {
+        "anyOf": [
+          {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "What the calling agent is trying to accomplish",
+        "title": "Agent Goal"
+      },
+      "available_memory_refs": {
+        "description": "Opaque memory references (mem_...) instead of raw sensitive data",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Available Memory Refs",
+        "type": "array"
+      },
+      "conversation_context": {
+        "description": "Recent conversation turns (short-term context only)",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Conversation Context",
+        "type": "array"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "subject_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "User/subject that owns the memory refs",
+        "title": "Subject Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      },
+      "user_message": {
+        "description": "Raw user request as received by the agent",
+        "maxLength": 20000,
+        "minLength": 1,
+        "title": "User Message",
+        "type": "string"
+      }
+    },
+    "required": [
+      "user_message"
+    ],
+    "title": "MirrorUserIntentInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "mirror_user_intent",
+  "output": {
+    "$defs": {
+      "Ambiguity": {
+        "additionalProperties": false,
+        "properties": {
+          "blocking": {
+            "description": "True if acting without an answer is likely wrong",
+            "title": "Blocking",
+            "type": "boolean"
+          },
+          "clarification_question": {
+            "title": "Clarification Question",
+            "type": "string"
+          },
+          "issue": {
+            "title": "Issue",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue",
+          "clarification_question",
+          "blocking"
+        ],
+        "title": "Ambiguity",
+        "type": "object"
+      },
+      "BusinessOutcome": {
+        "additionalProperties": false,
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "metric"
+        ],
+        "title": "BusinessOutcome",
+        "type": "object"
+      },
+      "Conflict": {
+        "additionalProperties": false,
+        "properties": {
+          "between": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Between",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "resolution_hint": {
+            "title": "Resolution Hint",
+            "type": "string"
+          }
+        },
+        "required": [
+          "between",
+          "description",
+          "resolution_hint"
+        ],
+        "title": "Conflict",
+        "type": "object"
+      },
+      "Constraint": {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "time",
+              "budget",
+              "scope",
+              "quality",
+              "format",
+              "policy",
+              "resource"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "title": "Constraint",
+        "type": "object"
+      },
+      "IntentLabel": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "confidence"
+        ],
+        "title": "IntentLabel",
+        "type": "object"
+      },
+      "MemoryUse": {
+        "additionalProperties": false,
+        "properties": {
+          "age_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Age Days"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "resolved",
+              "missing",
+              "expired",
+              "out_of_scope"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "status",
+          "confidence"
+        ],
+        "title": "MemoryUse",
+        "type": "object"
+      },
+      "ResponseStrategy": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "enum": [
+              "clarify_first",
+              "act",
+              "act_with_confirmation",
+              "reflect",
+              "escalate"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "mode",
+          "rationale",
+          "steps"
+        ],
+        "title": "ResponseStrategy",
+        "type": "object"
+      },
+      "Urgency": {
+        "additionalProperties": false,
+        "properties": {
+          "deadline_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Deadline Text"
+          },
+          "level": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "score": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "signals": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "level",
+          "score"
+        ],
+        "title": "Urgency",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "ambiguities": {
+        "items": {
+          "$ref": "#/$defs/Ambiguity"
+        },
+        "title": "Ambiguities",
+        "type": "array"
+      },
+      "business_outcomes": {
+        "items": {
+          "$ref": "#/$defs/BusinessOutcome"
+        },
+        "title": "Business Outcomes",
+        "type": "array"
+      },
+      "confidence": {
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "conflicts": {
+        "items": {
+          "$ref": "#/$defs/Conflict"
+        },
+        "title": "Conflicts",
+        "type": "array"
+      },
+      "constraints": {
+        "items": {
+          "$ref": "#/$defs/Constraint"
+        },
+        "title": "Constraints",
+        "type": "array"
+      },
+      "decision_style": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Decision Style"
+      },
+      "desired_output": {
+        "title": "Desired Output",
+        "type": "string"
+      },
+      "explicit_goals": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Explicit Goals",
+        "type": "array"
+      },
+      "implicit_goals": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Implicit Goals",
+        "type": "array"
+      },
+      "memory_used": {
+        "items": {
+          "$ref": "#/$defs/MemoryUse"
+        },
+        "title": "Memory Used",
+        "type": "array"
+      },
+      "mirror_summary": {
+        "title": "Mirror Summary",
+        "type": "string"
+      },
+      "preferred_tone": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Preferred Tone"
+      },
+      "primary_intent": {
+        "$ref": "#/$defs/IntentLabel"
+      },
+      "recommended_agent_response_strategy": {
+        "$ref": "#/$defs/ResponseStrategy"
+      },
+      "reflection_prompts": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Reflection Prompts",
+        "type": "array"
+      },
+      "risk_tolerance": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "unknown"
+        ],
+        "title": "Risk Tolerance",
+        "type": "string"
+      },
+      "secondary_intents": {
+        "items": {
+          "$ref": "#/$defs/IntentLabel"
+        },
+        "title": "Secondary Intents",
+        "type": "array"
+      },
+      "urgency": {
+        "$ref": "#/$defs/Urgency"
+      },
+      "working_preferences": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Working Preferences",
+        "type": "array"
+      }
+    },
+    "required": [
+      "primary_intent",
+      "secondary_intents",
+      "explicit_goals",
+      "implicit_goals",
+      "constraints",
+      "urgency",
+      "ambiguities",
+      "conflicts",
+      "decision_style",
+      "preferred_tone",
+      "risk_tolerance",
+      "working_preferences",
+      "desired_output",
+      "mirror_summary",
+      "business_outcomes",
+      "reflection_prompts",
+      "recommended_agent_response_strategy",
+      "memory_used",
+      "confidence"
+    ],
+    "title": "MirrorUserIntentOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Mirror user intent",
+  "tool_version": "1.0.0"
+}

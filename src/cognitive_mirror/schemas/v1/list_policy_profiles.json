@@ -1,0 +1,73 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/list_policy_profiles.json",
+  "description": "Governance only (admin, compliance): returns guardrail policy profiles.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "ListPolicyProfilesInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "list_policy_profiles",
+  "output": {
+    "additionalProperties": false,
+    "properties": {
+      "active_profile": {
+        "title": "Active Profile",
+        "type": "string"
+      },
+      "profiles": {
+        "additionalProperties": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Profiles",
+        "type": "object"
+      }
+    },
+    "required": [
+      "active_profile",
+      "profiles"
+    ],
+    "title": "ListPolicyProfilesOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "compliance"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": true,
+  "title": "List policy profiles",
+  "tool_version": "1.0.0"
+}

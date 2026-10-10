@@ -1,0 +1,236 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/check_guardrails.json",
+  "description": "Call BEFORE any external, irreversible, financial or high-impact action. Detects PII and secrets (with redactions), regulated advice (medical, legal, financial, immigration), manipulation patterns and sensitive data, applies the policy profile, and returns allowed, risk_level, issues, human_approval_required and a safe alternative.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "data_used": {
+        "description": "Data items or labels the action will use",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 100,
+        "title": "Data Used",
+        "type": "array"
+      },
+      "planned_action": {
+        "maxLength": 10000,
+        "minLength": 1,
+        "title": "Planned Action",
+        "type": "string"
+      },
+      "policy_profile": {
+        "anyOf": [
+          {
+            "pattern": "^[a-z_]{1,40}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "default | strict | enterprise",
+        "title": "Policy Profile"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      },
+      "user_context": {
+        "additionalProperties": true,
+        "description": "e.g. {'consent': {'share_externally': false}, 'jurisdiction': 'CA'}",
+        "title": "User Context",
+        "type": "object"
+      }
+    },
+    "required": [
+      "planned_action"
+    ],
+    "title": "CheckGuardrailsInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "check_guardrails",
+  "output": {
+    "$defs": {
+      "GuardrailIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "policy_reason": {
+            "title": "Policy Reason",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "category",
+          "severity",
+          "description",
+          "policy_reason"
+        ],
+        "title": "GuardrailIssue",
+        "type": "object"
+      },
+      "Redaction": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "masked_preview": {
+            "title": "Masked Preview",
+            "type": "string"
+          },
+          "placeholder": {
+            "title": "Placeholder",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "location",
+          "placeholder",
+          "masked_preview"
+        ],
+        "title": "Redaction",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "allowed": {
+        "title": "Allowed",
+        "type": "boolean"
+      },
+      "approval_reasons": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Approval Reasons",
+        "type": "array"
+      },
+      "human_approval_required": {
+        "title": "Human Approval Required",
+        "type": "boolean"
+      },
+      "issues": {
+        "items": {
+          "$ref": "#/$defs/GuardrailIssue"
+        },
+        "title": "Issues",
+        "type": "array"
+      },
+      "policy_profile": {
+        "title": "Policy Profile",
+        "type": "string"
+      },
+      "redacted_action": {
+        "title": "Redacted Action",
+        "type": "string"
+      },
+      "required_redactions": {
+        "items": {
+          "$ref": "#/$defs/Redaction"
+        },
+        "title": "Required Redactions",
+        "type": "array"
+      },
+      "risk_level": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "Risk Level",
+        "type": "string"
+      },
+      "safe_alternative": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Safe Alternative"
+      }
+    },
+    "required": [
+      "allowed",
+      "risk_level",
+      "issues",
+      "required_redactions",
+      "human_approval_required",
+      "approval_reasons",
+      "safe_alternative",
+      "policy_profile",
+      "redacted_action"
+    ],
+    "title": "CheckGuardrailsOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent",
+    "compliance"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Check guardrails",
+  "tool_version": "1.0.0"
+}

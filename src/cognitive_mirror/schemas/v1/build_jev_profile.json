@@ -1,0 +1,455 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/build_jev_profile.json",
+  "description": "Builds a Jev (persona, journey, emotion, value, judgment) profile for a user, stakeholder, scenario or workflow from context, known preferences, recent interactions and memory refs. Returns persona signals, journey stage, emotion signals, ranked value drivers, judgment context and autonomy safeguards. Never infers protected attributes. Set persist=true with consent=true to save it.",
+  "input": {
+    "$defs": {
+      "Subject": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Role"
+          },
+          "type": {
+            "default": "user",
+            "enum": [
+              "user",
+              "stakeholder",
+              "scenario",
+              "workflow"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "Subject",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "consent": {
+        "default": false,
+        "description": "Explicit consent to persist the profile",
+        "title": "Consent",
+        "type": "boolean"
+      },
+      "context": {
+        "default": "",
+        "maxLength": 20000,
+        "title": "Context",
+        "type": "string"
+      },
+      "known_preferences": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "maxProperties": 50,
+        "title": "Known Preferences",
+        "type": "object"
+      },
+      "memory_refs": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Memory Refs",
+        "type": "array"
+      },
+      "persist": {
+        "default": false,
+        "description": "Store the profile as durable memory",
+        "title": "Persist",
+        "type": "boolean"
+      },
+      "recent_interactions": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Recent Interactions",
+        "type": "array"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "subject": {
+        "$ref": "#/$defs/Subject"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "BuildJevProfileInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "build_jev_profile",
+  "output": {
+    "$defs": {
+      "JourneyStageResult": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "stage": {
+            "enum": [
+              "exploring",
+              "deciding",
+              "executing",
+              "following_up",
+              "recovering"
+            ],
+            "title": "Stage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "confidence",
+          "evidence"
+        ],
+        "title": "JourneyStageResult",
+        "type": "object"
+      },
+      "JudgmentContext": {
+        "additionalProperties": false,
+        "properties": {
+          "judgment_need": {
+            "title": "Judgment Need",
+            "type": "string"
+          },
+          "key_questions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Key Questions",
+            "type": "array"
+          },
+          "options_hint": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options Hint",
+            "type": "array"
+          },
+          "recommended_next_steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recommended Next Steps",
+            "type": "array"
+          },
+          "risks": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Risks",
+            "type": "array"
+          },
+          "stakeholder_impact": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Stakeholder Impact",
+            "type": "array"
+          }
+        },
+        "required": [
+          "judgment_need",
+          "key_questions",
+          "options_hint",
+          "risks",
+          "recommended_next_steps",
+          "stakeholder_impact"
+        ],
+        "title": "JudgmentContext",
+        "type": "object"
+      },
+      "MemoryUse": {
+        "additionalProperties": false,
+        "properties": {
+          "age_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Age Days"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "resolved",
+              "missing",
+              "expired",
+              "out_of_scope"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "status",
+          "confidence"
+        ],
+        "title": "MemoryUse",
+        "type": "object"
+      },
+      "PersonaSignals": {
+        "additionalProperties": false,
+        "properties": {
+          "communication_preference": {
+            "enum": [
+              "concise",
+              "detailed",
+              "formal",
+              "casual",
+              "unknown"
+            ],
+            "title": "Communication Preference",
+            "type": "string"
+          },
+          "current_context": {
+            "title": "Current Context",
+            "type": "string"
+          },
+          "expertise_level": {
+            "enum": [
+              "novice",
+              "intermediate",
+              "expert",
+              "unknown"
+            ],
+            "title": "Expertise Level",
+            "type": "string"
+          },
+          "goals": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Goals",
+            "type": "array"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "required": [
+          "role",
+          "expertise_level",
+          "goals",
+          "communication_preference",
+          "current_context"
+        ],
+        "title": "PersonaSignals",
+        "type": "object"
+      },
+      "Signal": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "score": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "score"
+        ],
+        "title": "Signal",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "autonomy_safeguards": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Autonomy Safeguards",
+        "type": "array"
+      },
+      "confidence": {
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "emotion_signals": {
+        "items": {
+          "$ref": "#/$defs/Signal"
+        },
+        "title": "Emotion Signals",
+        "type": "array"
+      },
+      "ignored_sensitive_attributes": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Ignored Sensitive Attributes",
+        "type": "array"
+      },
+      "journey_stage": {
+        "$ref": "#/$defs/JourneyStageResult"
+      },
+      "judgment_context": {
+        "$ref": "#/$defs/JudgmentContext"
+      },
+      "memory_used": {
+        "items": {
+          "$ref": "#/$defs/MemoryUse"
+        },
+        "title": "Memory Used",
+        "type": "array"
+      },
+      "persona_signals": {
+        "$ref": "#/$defs/PersonaSignals"
+      },
+      "profile_ref": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Profile Ref"
+      },
+      "value_drivers": {
+        "items": {
+          "$ref": "#/$defs/Signal"
+        },
+        "title": "Value Drivers",
+        "type": "array"
+      }
+    },
+    "required": [
+      "persona_signals",
+      "journey_stage",
+      "emotion_signals",
+      "value_drivers",
+      "judgment_context",
+      "autonomy_safeguards",
+      "ignored_sensitive_attributes",
+      "memory_used",
+      "profile_ref",
+      "confidence"
+    ],
+    "title": "BuildJevProfileOutput",
+    "type": "object"
+  },
+  "read_only": false,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Build Jev profile",
+  "tool_version": "1.0.0"
+}

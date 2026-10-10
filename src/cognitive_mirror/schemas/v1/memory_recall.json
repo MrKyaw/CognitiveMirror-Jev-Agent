@@ -1,0 +1,189 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/memory_recall.json",
+  "description": "Recalls memory items for a subject by refs and/or keyword query, with staleness-aware confidence and a list of missing or expired refs.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "default": "any",
+        "enum": [
+          "context",
+          "profile",
+          "any"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "limit": {
+        "default": 10,
+        "maximum": 100,
+        "minimum": 1,
+        "title": "Limit",
+        "type": "integer"
+      },
+      "query": {
+        "default": "",
+        "maxLength": 2000,
+        "title": "Query",
+        "type": "string"
+      },
+      "refs": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 50,
+        "title": "Refs",
+        "type": "array"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "subject_id": {
+        "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+        "title": "Subject Id",
+        "type": "string"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "required": [
+      "subject_id"
+    ],
+    "title": "MemoryRecallInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "memory_recall",
+  "output": {
+    "$defs": {
+      "MemoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "number"
+          },
+          "confidence": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "title": "Expires At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "relevance": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Relevance",
+            "type": "number"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ref",
+          "kind",
+          "content",
+          "tags",
+          "created_at",
+          "expires_at",
+          "age_days",
+          "confidence",
+          "relevance"
+        ],
+        "title": "MemoryItem",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "coverage_confidence": {
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "title": "Coverage Confidence",
+        "type": "number"
+      },
+      "items": {
+        "items": {
+          "$ref": "#/$defs/MemoryItem"
+        },
+        "title": "Items",
+        "type": "array"
+      },
+      "missing_refs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Missing Refs",
+        "type": "array"
+      },
+      "note": {
+        "title": "Note",
+        "type": "string"
+      }
+    },
+    "required": [
+      "items",
+      "missing_refs",
+      "coverage_confidence",
+      "note"
+    ],
+    "title": "MemoryRecallOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Recall memory",
+  "tool_version": "1.0.0"
+}

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CognitiveMirror — Demo Console &amp; Approval Inbox</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 0 auto; padding: 1rem; }
+  nav button { margin-right: .5rem; padding: .4rem .8rem; }
+  section.tab { display: none; }
+  section.tab.active { display: block; }
+  textarea, input[type=text] { width: 100%; box-sizing: border-box; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .panel { border: 1px solid #888; border-radius: 6px; padding: .6rem; }
+  .panel h3 { margin: .2rem 0 .4rem; font-size: .95rem; }
+  .badge { display: inline-block; padding: .1rem .5rem; border-radius: 10px; border: 1px solid #888; }
+  .item { border-bottom: 1px solid #888; padding: .5rem 0; }
+  pre { white-space: pre-wrap; font-size: .8rem; }
+  .err { color: #b00020; }
+</style>
+</head>
+<body>
+<h1>CognitiveMirror</h1>
+<p>
+  API key: <input type="text" id="apikey" value="dev-agent-key" autocomplete="off">
+</p>
+<nav>
+  <button data-tab="console">UI-1 Demo Console</button>
+  <button data-tab="inbox">UI-2 Approval Inbox</button>
+</nav>
+
+<section class="tab active" id="tab-console">
+  <h2>Demo Console</h2>
+  <textarea id="query" rows="3">Draft a follow-up email to my hiring manager about tomorrow's interview</textarea>
+  <p>
+    <button id="run">Run workflow</button>
+    <label><input type="checkbox" id="want-decision"> frame decision</label>
+    <label><input type="checkbox" id="want-impact" checked> assess impact</label>
+  </p>
+  <p id="console-err" class="err"></p>
+  <div class="grid">
+    <div class="panel"><h3>Mirror Summary</h3><div id="p-mirror">—</div></div>
+    <div class="panel"><h3>Jev Signals</h3><div id="p-jev">—</div></div>
+    <div class="panel"><h3>Guardrail</h3><div id="p-guard">—</div></div>
+    <div class="panel"><h3>Next Action</h3><div id="p-action">—</div></div>
+    <div class="panel"><h3>Decision</h3><div id="p-decision">—</div></div>
+    <div class="panel"><h3>Business Impact</h3><div id="p-impact">—</div></div>
+  </div>
+  <p><button id="to-inbox" disabled>Send guardrail result to Approval Inbox</button></p>
+</section>
+
+<section class="tab" id="tab-inbox">
+  <h2>Approval Inbox</h2>
+  <p>
+    <button id="refresh">Refresh</button>
+    <label><input type="checkbox" id="only-pending" checked> pending only</label>
+  </p>
+  <p id="inbox-err" class="err"></p>
+  <div id="inbox-list">—</div>
+</section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let lastGuard = null;
+
+document.querySelectorAll("nav button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("section.tab").forEach((s) => s.classList.remove("active"));
+    $("tab-" + b.dataset.tab).classList.add("active");
+    if (b.dataset.tab === "inbox") loadInbox();
+  });
+});
+
+function headers() {
+  return { "Content-Type": "application/json", "X-API-Key": $("apikey").value.trim() };
+}
+async function tool(name, payload) {
+  const r = await fetch("v1/tools/" + name, { method: "POST", headers: headers(), body: JSON.stringify(payload) });
+  const j = await r.json();
+  if (!r.ok) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
+  return j;
+}
+const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+$("run").addEventListener("click", async () => {
+  $("console-err").textContent = "";
+  $("to-inbox").disabled = true;
+  lastGuard = null;
+  try {
+    const trace = "tr_ui_" + Date.now().toString(36);
+    const q = $("query").value;
+    const mirror = await tool("mirror_user_intent", { user_message: q, trace_id: trace });
+    const m = mirror.result;
+    $("p-mirror").innerHTML = "<p>" + esc(m.mirror_summary) + "</p><p><b>" + esc(m.primary_intent.label) +
+      "</b> (" + m.primary_intent.confidence + ") · urgency " + esc(m.urgency.level) + "</p>";
+    const jev = await tool("build_jev_profile", { context: q, trace_id: trace });
+    const j = jev.result;
+    $("p-jev").innerHTML = "<p>Journey: <b>" + esc(j.journey_stage.stage) + "</b> (" +
+      j.journey_stage.confidence + ")</p><p>Values: " +
+      j.value_drivers.map((v) => esc(v.name)).join(", ") + "</p><p>Emotions: " +
+      (j.emotion_signals.map((e) => esc(e.name)).join(", ") || "none") + "</p>";
+    const guard = await tool("check_guardrails", { planned_action: m.desired_output + ": " + q, trace_id: trace });
+    const g = guard.result;
+    lastGuard = { trace_id: trace, planned_action: m.desired_output + ": " + q, risk_level: g.risk_level,
+      reasons: g.issues.map((i) => i.code + ": " + i.description), safe_alternative: g.safe_alternative };
+    $("p-guard").innerHTML = '<p><span class="badge">' + (g.allowed ? "allowed" : "blocked") +
+      " · " + esc(g.risk_level) + "</span></p><p>Approval required: <b>" + g.human_approval_required +
+      "</b></p>" + (g.safe_alternative ? "<p>Alternative: " + esc(g.safe_alternative) + "</p>" : "");
+    $("to-inbox").disabled = !g.human_approval_required;
+    const action = await tool("recommend_next_action", { intent_summary: m, jev_profile: j,
+      guardrail_result: g, available_tools: ["email", "calendar"], trace_id: trace });
+    $("p-action").innerHTML = "<p>" + esc(action.result.agent_instruction) + "</p>";
+    if ($("want-decision").checked) {
+      const d = await tool("frame_decision", { decision_question: q, trace_id: trace });
+      $("p-decision").innerHTML = "<p>Recommended: <b>" +
+        esc(d.result.options.find((o) => o.id === d.result.recommended_option).name) +
+        "</b></p><p>" + esc(d.result.rationale) + "</p>";
+    } else { $("p-decision").textContent = "—"; }
+    if ($("want-impact").checked) {
+      const im = await tool("assess_business_impact", { request: q, trace_id: trace });
+      $("p-impact").innerHTML = "<p>Category: <b>" + esc(im.result.impact_category) +
+        "</b> · priority " + im.result.priority_score + "</p><p>" + esc(im.result.roi_hypothesis) + "</p>";
+    } else { $("p-impact").textContent = "—"; }
+  } catch (e) { $("console-err").textContent = e.message; }
+});
+
+$("to-inbox").addEventListener("click", async () => {
+  if (!lastGuard) return;
+  const r = await fetch("v1/approvals", { method: "POST", headers: headers(), body: JSON.stringify(lastGuard) });
+  if (!r.ok) { $("console-err").textContent = "Inbox rejected the item (HTTP " + r.status + ")"; return; }
+  document.querySelector('[data-tab="inbox"]').click();
+});
+
+async function loadInbox() {
+  $("inbox-err").textContent = "";
+  try {
+    const url = "v1/approvals" + ($("only-pending").checked ? "?status=pending" : "");
+    const r = await fetch(url, { headers: headers() });
+    const j = await r.json();
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    if (!j.items.length) { $("inbox-list").textContent = "Inbox is empty."; return; }
+    $("inbox-list").innerHTML = j.items.map((a) =>
+      '<div class="item" data-id="' + a.id + '"><p><b>' + esc(a.id) + "</b> " +
+      '<span class="badge">' + esc(a.risk_level) + " · " + esc(a.status) + "</span></p><p>" +
+      esc(a.planned_action) + "</p>" +
+      (a.status === "pending"
+        ? '<input type="text" placeholder="reason (optional)" class="reason"> ' +
+          '<button class="ok">Approve</button> <button class="no">Reject</button>'
+        : "<p>Decided by " + esc(a.decided_by) + ": " + esc(a.decision_reason) + "</p>") +
+      "</div>").join("");
+    $("inbox-list").querySelectorAll(".item").forEach((el) => {
+      const decide = async (decision) => {
+        const reason = el.querySelector(".reason").value;
+        const r = await fetch("v1/approvals/" + el.dataset.id + "/decision", { method: "POST",
+          headers: headers(), body: JSON.stringify({ decision: decision, reason: reason }) });
+        if (!r.ok) { $("inbox-err").textContent = "Decision failed (HTTP " + r.status + ")"; return; }
+        loadInbox();
+      };
+      const ok = el.querySelector(".ok"), no = el.querySelector(".no");
+      if (ok) ok.addEventListener("click", () => decide("approved"));
+      if (no) no.addEventListener("click", () => decide("rejected"));
+    });
+  } catch (e) { $("inbox-err").textContent = e.message; }
+}
+$("refresh").addEventListener("click", loadInbox);
+$("only-pending").addEventListener("change", loadInbox);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "strict",
+  "description": "Regulated environments: blocks regulated advice, sensitive data, bulk data and external sharing of personal data; requires approval for every action with any finding.",
+  "block": [
+    "manipulation", "credential_exposure", "security_bypass", "pii_external_share",
+    "special_category_data", "bulk_data", "regulated_advice"
+  ],
+  "require_approval": [
+    "external_action", "irreversible_action", "financial_action", "high_impact_communication",
+    "regulated_advice", "special_category_data", "pii_external_share", "bulk_data", "pii"
+  ],
+  "approval_risk_threshold": "low",
+  "severity_overrides": {"external_action": "high", "pii": "high"}
+}

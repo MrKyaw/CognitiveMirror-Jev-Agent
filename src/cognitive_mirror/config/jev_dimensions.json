@@ -1,0 +1,253 @@
+{
+  "version": "1.0.0",
+  "intents": {
+    "draft_communication": {
+      "keywords": ["email", "draft", "write a", "write an", "reply", "respond to", "message to", "letter", "note to", "linkedin post", "announcement", "send a", "cover letter", "thank you note", "rewrite", "message"],
+      "desired_output": "draft message for review",
+      "implicit_goals": ["Protect the relationship and professional reputation", "Get a timely, positive response"],
+      "outcome": ["Faster, clearer stakeholder communication", "response rate and time-to-reply"],
+      "action": {"action": "Draft the message for the user to review before sending", "type": "draft", "tool_keywords": ["email", "mail", "gmail", "outlook", "draft", "message", "slack"]},
+      "side_effects": true
+    },
+    "schedule_task": {
+      "keywords": ["schedule", "meeting", "calendar", "book a", "remind me", "reminder", "appointment", "set up a call", "reschedule", "availability"],
+      "desired_output": "proposed schedule or calendar entry",
+      "implicit_goals": ["Protect focus time and avoid conflicts", "Make sure nothing important is forgotten"],
+      "outcome": ["Less coordination overhead", "hours spent scheduling per week"],
+      "action": {"action": "Propose time options and confirm before booking", "type": "schedule", "tool_keywords": ["calendar", "schedule", "meeting", "reminder", "todo", "task"]},
+      "side_effects": true
+    },
+    "prepare_interview": {
+      "keywords": ["interview", "job description", "resume", "cv", "recruiter", "hiring manager", "behavioral question", "star method", "tell me about yourself", "job posting", "candidate", "offer"],
+      "desired_output": "interview prep notes with evidence-backed answers",
+      "implicit_goals": ["Present achievements credibly and memorably", "Advance to the next round or offer", "Avoid overstated or unverifiable claims"],
+      "outcome": ["Higher interview-to-offer conversion", "interview pass rate"],
+      "action": {"action": "Map the job requirements to the user's strongest proof points and draft concise STAR answers", "type": "draft", "tool_keywords": ["doc", "notes", "resume", "search", "web"]},
+      "side_effects": false
+    },
+    "make_decision": {
+      "keywords": ["should i", "should we", "decide", "decision", "choose", "which option", "whether to", "or not", "pick between", "go with", "trade-off", "tradeoff", "pros and cons"],
+      "desired_output": "decision recommendation with tradeoffs",
+      "implicit_goals": ["Minimize regret and downside risk", "Make a decision that can be explained to others"],
+      "outcome": ["Better decision quality and speed", "decision cycle time and reversal rate"],
+      "action": {"action": "Frame the decision with options, criteria and risks (call frame_decision)", "type": "decide", "tool_keywords": ["frame_decision", "decision", "analysis"]},
+      "side_effects": false
+    },
+    "plan_project": {
+      "keywords": ["plan", "roadmap", "strategy", "milestone", "timeline", "launch", "project", "rollout", "okr", "goals for", "quarter"],
+      "desired_output": "phased plan with owners and milestones",
+      "implicit_goals": ["Deliver on time without surprises", "Align stakeholders on scope"],
+      "outcome": ["Predictable delivery", "on-time milestone rate"],
+      "action": {"action": "Create a phased plan with milestones, owners, risks and a first concrete step", "type": "plan", "tool_keywords": ["project", "jira", "linear", "task", "notion", "doc"]},
+      "side_effects": false
+    },
+    "analyze_information": {
+      "keywords": ["analyze", "analyse", "analysis", "compare", "evaluate", "assess", "review", "research", "investigate", "benchmark", "audit"],
+      "desired_output": "structured analysis with findings and implications",
+      "implicit_goals": ["Reach a defensible conclusion quickly", "Surface what matters, not everything"],
+      "outcome": ["Faster insight to action", "time-to-insight"],
+      "action": {"action": "Run a structured analysis and lead with the conclusion", "type": "research", "tool_keywords": ["search", "web", "database", "sql", "analytics", "browser"]},
+      "side_effects": false
+    },
+    "summarize": {
+      "keywords": ["summarize", "summarise", "summary", "recap", "tl;dr", "tldr", "digest", "key points", "highlights", "brief me"],
+      "desired_output": "concise summary",
+      "implicit_goals": ["Save reading time", "Not miss decisions or action items"],
+      "outcome": ["Reduced reading and catch-up time", "minutes saved per document"],
+      "action": {"action": "Summarize with decisions, action items and open questions first", "type": "summarize", "tool_keywords": ["doc", "drive", "notes", "search"]},
+      "side_effects": false
+    },
+    "learn_explain": {
+      "keywords": ["explain", "how does", "what is", "what are", "teach me", "help me understand", "learn about", "walk me through", "difference between"],
+      "desired_output": "clear explanation at the right level",
+      "implicit_goals": ["Build confident understanding", "Be able to apply or explain it to others"],
+      "outcome": ["Faster ramp-up", "time to competency"],
+      "action": {"action": "Explain at the user's expertise level with one concrete example", "type": "explain", "tool_keywords": ["search", "web", "docs"]},
+      "side_effects": false
+    },
+    "follow_up": {
+      "keywords": ["follow up", "follow-up", "followup", "check in", "nudge", "status update", "haven't heard", "heard back", "circle back", "chase"],
+      "desired_output": "follow-up message and reminder",
+      "implicit_goals": ["Keep momentum without seeming pushy", "Close open loops"],
+      "outcome": ["Fewer stalled threads", "open-loop closure rate"],
+      "action": {"action": "Draft a short, polite follow-up and propose a reminder date", "type": "draft", "tool_keywords": ["email", "mail", "slack", "reminder", "calendar", "crm"]},
+      "side_effects": true
+    },
+    "reflect": {
+      "keywords": ["reflect", "i feel", "i'm stuck", "im stuck", "struggling", "my thinking", "blind spot", "overthinking", "self-review", "retrospective", "what am i missing", "lessons learned"],
+      "desired_output": "reflection summary and practical next step",
+      "implicit_goals": ["Gain clarity and regain momentum", "Turn reflection into a concrete next step"],
+      "outcome": ["Better prioritization and wellbeing", "priority clarity and follow-through"],
+      "action": {"action": "Mirror the user's priorities back, offer two reflection prompts and one small next step", "type": "reflect", "tool_keywords": ["journal", "notes"]},
+      "side_effects": false
+    },
+    "customer_engagement": {
+      "keywords": ["customer", "client", "prospect", "deal", "renewal", "churn", "proposal", "quote", "account", "upsell", "objection", "complaint", "escalation"],
+      "desired_output": "customer response plan",
+      "implicit_goals": ["Retain trust and grow the account", "Resolve the customer's underlying concern"],
+      "outcome": ["Retention and revenue growth", "renewal rate, win rate and CSAT"],
+      "action": {"action": "Prepare a response that addresses the customer's concern and proposes a clear next step", "type": "communicate", "tool_keywords": ["crm", "salesforce", "hubspot", "zendesk", "email"]},
+      "side_effects": true
+    },
+    "recall_memory": {
+      "keywords": ["remember", "last time", "previously", "what did i", "what did we", "recall", "remind me what", "we discussed", "earlier you said"],
+      "desired_output": "recalled context with source and freshness",
+      "implicit_goals": ["Avoid repeating context", "Stay consistent with earlier decisions"],
+      "outcome": ["Less repeated context gathering", "repeated explanations per task"],
+      "action": {"action": "Retrieve relevant memory (call memory_recall) and confirm it is still current", "type": "recall", "tool_keywords": ["memory_recall", "memory", "notes", "search"]},
+      "side_effects": false
+    }
+  },
+  "urgency": {
+    "critical": ["asap", "urgent", "urgently", "immediately", "right now", "emergency", "critical", "right away", "within the hour"],
+    "high": ["today", "tonight", "by eod", "end of day", "tomorrow", "this morning", "this afternoon", "deadline", "quickly", "time-sensitive", "time sensitive"],
+    "medium": ["this week", "next week", "soon", "by friday", "by monday", "by tuesday", "by wednesday", "by thursday", "few days", "end of week"],
+    "low": ["whenever", "no rush", "someday", "eventually", "when you have time", "low priority", "not urgent", "next month", "next quarter"]
+  },
+  "emotions": {
+    "excitement": ["excited", "thrilled", "can't wait", "cant wait", "love", "great news", "amazing", "pumped", "looking forward"],
+    "concern": ["worried", "concerned", "nervous", "anxious", "unsure", "afraid", "scared", "uneasy", "not sure"],
+    "frustration": ["frustrated", "annoyed", "fed up", "still not", "ridiculous", "waste of time", "keeps happening", "sick of", "again?", "irritated"],
+    "urgency": ["asap", "urgent", "immediately", "right now", "deadline", "running out of time", "hurry"],
+    "confidence": ["confident", "certain", "ready", "nailed", "strong case", "i know", "sure about"],
+    "disappointment": ["disappointed", "rejected", "didn't get", "did not get", "let down", "failed", "lost the", "turned down", "unfortunately"]
+  },
+  "value_drivers": {
+    "speed": ["fast", "quick", "quickly", "asap", "speed", "time", "deadline", "today", "faster", "turnaround"],
+    "trust": ["trust", "credible", "credibility", "honest", "transparent", "reputation", "relationship", "reliable"],
+    "quality": ["quality", "polished", "accurate", "thorough", "high-quality", "excellent", "perfect", "correct", "professional"],
+    "cost": ["cost", "budget", "cheap", "price", "affordable", "save money", "spend", "expensive", "savings"],
+    "compliance": ["compliance", "compliant", "policy", "gdpr", "hipaa", "pipeda", "soc 2", "audit", "legal", "regulation", "approved"],
+    "revenue": ["revenue", "sales", "deal", "pipeline", "upsell", "arr", "mrr", "conversion", "growth", "close the"],
+    "career_growth": ["career", "promotion", "interview", "job", "offer", "role", "growth", "resume", "salary", "leadership"],
+    "user_satisfaction": ["customer", "user", "satisfaction", "nps", "csat", "happy", "experience", "feedback", "churn"]
+  },
+  "value_weights": {
+    "speed": 1.0, "trust": 1.0, "quality": 1.0, "cost": 1.0, "compliance": 1.2,
+    "revenue": 1.0, "career_growth": 1.0, "user_satisfaction": 1.0
+  },
+  "journey_stages": {
+    "exploring": ["exploring", "options", "ideas", "considering", "learn about", "research", "what are", "brainstorm", "curious", "thinking about"],
+    "deciding": ["decide", "deciding", "decision", "choose", "choosing", "should i", "should we", "versus", "vs", "compare", "which one", "pick", "torn between"],
+    "executing": ["draft", "write", "build", "implement", "send", "schedule", "launch", "prepare", "finish", "submit", "working on"],
+    "following_up": ["follow up", "follow-up", "status", "check in", "heard back", "next steps", "after the", "since our", "update on"],
+    "recovering": ["rejected", "failed", "setback", "lost", "didn't get", "did not get", "mistake", "recover", "bounce back", "went wrong", "turned down"]
+  },
+  "roles": {
+    "software engineer": ["software engineer", "developer", "engineer", "programmer", "sre", "devops"],
+    "engineering manager": ["engineering manager", "eng manager", "tech lead", "team lead"],
+    "executive": ["ceo", "cto", "cfo", "coo", "cio", "vp", "vice president", "executive", "director", "head of"],
+    "founder": ["founder", "co-founder", "startup owner"],
+    "product manager": ["product manager", "product owner"],
+    "designer": ["designer", "ux", "ui designer"],
+    "data professional": ["data scientist", "data analyst", "analyst", "ml engineer", "data engineer"],
+    "sales": ["sales", "account executive", "sdr", "bdr", "account manager"],
+    "customer success": ["customer success", "csm", "support engineer", "support agent"],
+    "recruiter": ["recruiter", "talent acquisition", "hiring manager"],
+    "consultant": ["consultant", "advisor", "contractor", "freelancer"],
+    "student": ["student", "graduate", "intern", "bootcamp"]
+  },
+  "expertise": {
+    "expert": ["expert", "senior", "principal", "staff", "years of experience", "architect", "lead", "veteran", "specialist"],
+    "novice": ["new to", "beginner", "first time", "junior", "just started", "not familiar", "never done", "newbie"]
+  },
+  "communication": {
+    "concise": ["concise", "brief", "short", "bullet", "bullets", "tl;dr", "to the point", "one line", "quick summary"],
+    "detailed": ["detailed", "thorough", "in depth", "in-depth", "comprehensive", "step by step", "step-by-step", "full explanation"],
+    "formal": ["formal", "professional tone", "polite", "respectful"],
+    "casual": ["casual", "friendly", "informal", "relaxed", "conversational"]
+  },
+  "decision_style": {
+    "analytical": ["data", "numbers", "evidence", "metrics", "analysis", "pros and cons", "quantify", "benchmark"],
+    "intuitive": ["gut", "feel like", "instinct", "vibe", "sense that", "hunch"],
+    "collaborative": ["team", "stakeholders", "consensus", "align", "input from", "together", "buy-in"],
+    "directive": ["just tell me", "decide for me", "bottom line", "recommend one", "what would you do", "give me the answer"]
+  },
+  "risk_tolerance": {
+    "low": ["safe", "conservative", "risk-averse", "can't afford", "cannot afford", "careful", "no risk", "cautious", "avoid risk"],
+    "high": ["bold", "aggressive", "move fast", "take a chance", "experiment", "risky is fine", "big bet", "moonshot"]
+  },
+  "conflicts": [
+    {"a": "speed", "b": "quality", "a_terms": ["asap", "quickly", "fast", "today", "urgent", "right now"], "b_terms": ["perfect", "thorough", "polished", "comprehensive", "flawless", "detailed"], "hint": "Agree on a minimum quality bar for the first version and a follow-up pass."},
+    {"a": "low cost", "b": "premium quality", "a_terms": ["cheap", "low cost", "no budget", "minimal budget", "free"], "b_terms": ["premium", "best in class", "top quality", "enterprise-grade", "highest quality"], "hint": "Identify which quality attributes are must-haves and which can be traded for cost."},
+    {"a": "brevity", "b": "completeness", "a_terms": ["short", "brief", "concise", "one page", "one paragraph"], "b_terms": ["everything", "all details", "comprehensive", "complete", "every"], "hint": "Lead with a short summary and put details in an appendix."},
+    {"a": "low risk", "b": "high ambition", "a_terms": ["safe", "no risk", "conservative", "can't afford"], "b_terms": ["bold", "aggressive", "10x", "moonshot", "disrupt"], "hint": "Stage the bet: a reversible pilot with an explicit stop condition."},
+    {"a": "tight deadline", "b": "large scope", "a_terms": ["today", "tonight", "by eod", "asap", "tomorrow"], "b_terms": ["entire", "complete overhaul", "full rewrite", "everything", "all of"], "hint": "Cut scope to the smallest deliverable that meets the deadline."}
+  ],
+  "value_outcomes": {
+    "speed": ["Faster task completion", "cycle time"],
+    "trust": ["Stronger trust and relationships", "approval or response rate"],
+    "quality": ["Higher-quality output with fewer revisions", "revision count"],
+    "cost": ["Lower cost for the same outcome", "spend versus budget"],
+    "compliance": ["Reduced compliance and reputational risk", "policy exceptions"],
+    "revenue": ["Revenue growth", "pipeline value and conversion rate"],
+    "career_growth": ["Career advancement", "interviews, offers or promotion readiness"],
+    "user_satisfaction": ["Higher customer and user satisfaction", "CSAT or NPS"]
+  },
+  "impact_categories": {
+    "productivity": {
+      "terms": ["time", "faster", "automate", "automation", "manual", "hours", "efficiency", "workflow", "productivity", "repetitive", "streamline", "throughput", "backlog"],
+      "benefits": ["Less time spent on repetitive work", "Faster turnaround for the workflow"],
+      "mechanism": "repetitive steps are removed or automated",
+      "metrics": [
+        {"metric": "hours spent per week", "keywords": ["hour", "time", "minutes", "effort"], "delta": -0.25},
+        {"metric": "cycle time per task", "keywords": ["cycle", "turnaround", "lead time", "days"], "delta": -0.2}
+      ]
+    },
+    "revenue": {
+      "terms": ["revenue", "sales", "upsell", "conversion", "pipeline", "deal", "pricing", "arr", "mrr", "win rate", "bookings", "monetize"],
+      "benefits": ["More pipeline converted to revenue", "Higher deal velocity"],
+      "mechanism": "better-targeted engagement converts more opportunities",
+      "metrics": [
+        {"metric": "conversion rate", "keywords": ["conversion", "win rate", "close rate"], "delta": 0.1},
+        {"metric": "revenue", "keywords": ["revenue", "arr", "mrr", "bookings", "sales"], "delta": 0.05}
+      ]
+    },
+    "cost_reduction": {
+      "terms": ["cost", "costs", "savings", "save money", "reduce spend", "budget", "cheaper", "overhead", "licenses", "vendor spend"],
+      "benefits": ["Lower operating cost", "Spend redirected to higher-value work"],
+      "mechanism": "waste and duplicated spend are removed",
+      "metrics": [
+        {"metric": "operating cost", "keywords": ["cost", "spend", "budget", "$"], "delta": -0.15}
+      ]
+    },
+    "risk_reduction": {
+      "terms": ["risk", "compliance", "audit", "security", "breach", "incident", "regulation", "gdpr", "hipaa", "privacy", "governance", "fraud"],
+      "benefits": ["Lower likelihood of compliance or security incidents", "Audit-ready evidence"],
+      "mechanism": "controls catch issues before they cause harm",
+      "metrics": [
+        {"metric": "incidents or policy exceptions", "keywords": ["incident", "exception", "violation", "finding"], "delta": -0.3}
+      ]
+    },
+    "customer_experience": {
+      "terms": ["customer", "customers", "nps", "csat", "churn", "support", "satisfaction", "response time", "onboarding experience", "retention", "tickets"],
+      "benefits": ["Faster, more personal customer responses", "Lower churn"],
+      "mechanism": "customers get faster, more relevant help",
+      "metrics": [
+        {"metric": "customer satisfaction (CSAT)", "keywords": ["csat", "satisfaction", "nps"], "delta": 0.1},
+        {"metric": "churn rate", "keywords": ["churn", "attrition", "retention"], "delta": -0.1}
+      ]
+    },
+    "quality": {
+      "terms": ["quality", "defects", "accuracy", "errors", "bugs", "rework", "consistency", "mistakes", "reliability"],
+      "benefits": ["Fewer errors and less rework", "More consistent output"],
+      "mechanism": "standardized checks catch errors earlier",
+      "metrics": [
+        {"metric": "error or rework rate", "keywords": ["error", "defect", "bug", "rework", "mistake"], "delta": -0.3}
+      ]
+    },
+    "employee_experience": {
+      "terms": ["employee", "employees", "onboarding", "morale", "burnout", "hiring", "career", "interview", "promotion", "engagement", "talent"],
+      "benefits": ["Better employee or candidate experience", "Faster ramp-up and growth"],
+      "mechanism": "people get clearer guidance and less friction",
+      "metrics": [
+        {"metric": "time to productivity", "keywords": ["ramp", "onboarding", "productivity"], "delta": -0.2},
+        {"metric": "interview-to-offer rate", "keywords": ["interview", "offer", "hiring"], "delta": 0.15}
+      ]
+    }
+  },
+  "goal_markers": ["i want to", "i need to", "i'd like to", "i would like to", "help me", "can you", "could you", "please", "my goal is", "we need to", "we want to", "the goal is", "aim to", "trying to", "looking to", "i have to", "i must"],
+  "imperative_verbs": ["write", "draft", "prepare", "create", "plan", "build", "summarize", "summarise", "schedule", "analyze", "analyse", "compare", "review", "explain", "find", "send", "reply", "decide", "help", "make", "update", "organize", "rewrite", "list", "map", "recommend"],
+  "sensitive_attribute_keys": ["health", "medical", "diagnosis", "religion", "ethnicity", "race", "sexual_orientation", "sexuality", "political", "politics", "disability", "pregnancy", "immigration_status", "criminal_record", "union_membership", "biometric", "genetic"],
+  "manipulative_terms": ["guilt", "pressure them", "exploit", "fomo", "fear of missing out", "dark pattern", "trick them", "manipulate", "while they're upset", "while they are upset", "vulnerable", "fake urgency", "fake scarcity", "make them feel bad", "shame them"]
+}

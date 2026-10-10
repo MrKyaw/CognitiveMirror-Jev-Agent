@@ -1,0 +1,253 @@
+{
+  "error": {
+    "$defs": {
+      "ErrorBody": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "invalid_input",
+              "unknown_tool",
+              "unauthorized",
+              "forbidden",
+              "not_found",
+              "internal_error"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Details",
+            "type": "array"
+          },
+          "hint": {
+            "title": "Hint",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "recoverable": {
+            "title": "Recoverable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "recoverable",
+          "hint"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "error": {
+        "$ref": "#/$defs/ErrorBody"
+      },
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "tool": {
+        "title": "Tool",
+        "type": "string"
+      },
+      "trace_id": {
+        "title": "Trace Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "request_id",
+      "trace_id",
+      "tool",
+      "error"
+    ],
+    "title": "ErrorEnvelope",
+    "type": "object"
+  },
+  "schema_version": "1.0.0",
+  "success": {
+    "$defs": {
+      "EngineInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "enriched": {
+            "default": false,
+            "title": "Enriched",
+            "type": "boolean"
+          },
+          "mode": {
+            "enum": [
+              "deterministic",
+              "hybrid"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "model_version"
+        ],
+        "title": "EngineInfo",
+        "type": "object"
+      },
+      "Epistemics": {
+        "additionalProperties": false,
+        "description": "Separates facts, assumptions, inferences and recommendations (PRD 9.2).",
+        "properties": {
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "facts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Facts",
+            "type": "array"
+          },
+          "inferences": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Inferences",
+            "type": "array"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recommendations",
+            "type": "array"
+          }
+        },
+        "title": "Epistemics",
+        "type": "object"
+      },
+      "Evidence": {
+        "additionalProperties": false,
+        "properties": {
+          "quote": {
+            "description": "Matched phrase or snippet (PII redacted)",
+            "title": "Quote",
+            "type": "string"
+          },
+          "source": {
+            "description": "Where the signal came from, e.g. user_message, conversation_context, memory:mem_..., known_preferences",
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "quote"
+        ],
+        "title": "Evidence",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "confidence": {
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "engine": {
+        "$ref": "#/$defs/EngineInfo"
+      },
+      "epistemics": {
+        "$ref": "#/$defs/Epistemics"
+      },
+      "evidence": {
+        "items": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "title": "Evidence",
+        "type": "array"
+      },
+      "latency_ms": {
+        "title": "Latency Ms",
+        "type": "number"
+      },
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "result": {
+        "additionalProperties": true,
+        "title": "Result",
+        "type": "object"
+      },
+      "schema_version": {
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Session Id"
+      },
+      "tool": {
+        "title": "Tool",
+        "type": "string"
+      },
+      "tool_version": {
+        "title": "Tool Version",
+        "type": "string"
+      },
+      "trace_id": {
+        "title": "Trace Id",
+        "type": "string"
+      },
+      "warnings": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      }
+    },
+    "required": [
+      "request_id",
+      "trace_id",
+      "session_id",
+      "tool",
+      "tool_version",
+      "schema_version",
+      "engine",
+      "result",
+      "epistemics",
+      "confidence",
+      "evidence",
+      "warnings",
+      "latency_ms"
+    ],
+    "title": "Envelope",
+    "type": "object"
+  }
+}

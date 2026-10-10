@@ -1,0 +1,360 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/frame_decision.json",
+  "description": "Turns a decision question into a decision frame (type, reversibility, stakes, weighted criteria), scored options including 'gather more information' and 'defer', tradeoffs, a risk register, a recommended option and rationale.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "constraints": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 30,
+        "title": "Constraints",
+        "type": "array"
+      },
+      "context": {
+        "default": "",
+        "maxLength": 20000,
+        "title": "Context",
+        "type": "string"
+      },
+      "decision_question": {
+        "maxLength": 5000,
+        "minLength": 1,
+        "title": "Decision Question",
+        "type": "string"
+      },
+      "options": {
+        "description": "Candidate options, if the caller already has them",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10,
+        "title": "Options",
+        "type": "array"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "success_metrics": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 30,
+        "title": "Success Metrics",
+        "type": "array"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "required": [
+      "decision_question"
+    ],
+    "title": "FrameDecisionInput",
+    "type": "object"
+  },
+  "kind": "deep",
+  "name": "frame_decision",
+  "output": {
+    "$defs": {
+      "Criterion": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "success_metric",
+              "constraint",
+              "default"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "weight": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "weight",
+          "source"
+        ],
+        "title": "Criterion",
+        "type": "object"
+      },
+      "DecisionFrame": {
+        "additionalProperties": false,
+        "properties": {
+          "constraints": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Constraints",
+            "type": "array"
+          },
+          "criteria": {
+            "items": {
+              "$ref": "#/$defs/Criterion"
+            },
+            "title": "Criteria",
+            "type": "array"
+          },
+          "decision_type": {
+            "enum": [
+              "binary",
+              "selection",
+              "timing",
+              "resource_allocation"
+            ],
+            "title": "Decision Type",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "reversibility": {
+            "enum": [
+              "reversible",
+              "hard_to_reverse"
+            ],
+            "title": "Reversibility",
+            "type": "string"
+          },
+          "stakes": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Stakes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "decision_type",
+          "reversibility",
+          "stakes",
+          "criteria",
+          "constraints"
+        ],
+        "title": "DecisionFrame",
+        "type": "object"
+      },
+      "DecisionOption": {
+        "additionalProperties": false,
+        "properties": {
+          "cons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cons",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pros": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pros",
+            "type": "array"
+          },
+          "scores": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Scores",
+            "type": "object"
+          },
+          "total_score": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Total Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "scores",
+          "total_score",
+          "pros",
+          "cons"
+        ],
+        "title": "DecisionOption",
+        "type": "object"
+      },
+      "RiskEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "impact": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Impact",
+            "type": "string"
+          },
+          "likelihood": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Likelihood",
+            "type": "string"
+          },
+          "mitigation": {
+            "title": "Mitigation",
+            "type": "string"
+          },
+          "option_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Id"
+          },
+          "risk": {
+            "title": "Risk",
+            "type": "string"
+          }
+        },
+        "required": [
+          "risk",
+          "option_id",
+          "likelihood",
+          "impact",
+          "mitigation"
+        ],
+        "title": "RiskEntry",
+        "type": "object"
+      },
+      "Tradeoff": {
+        "additionalProperties": false,
+        "properties": {
+          "between": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "Between",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "between",
+          "description"
+        ],
+        "title": "Tradeoff",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "decision_frame": {
+        "$ref": "#/$defs/DecisionFrame"
+      },
+      "options": {
+        "items": {
+          "$ref": "#/$defs/DecisionOption"
+        },
+        "title": "Options",
+        "type": "array"
+      },
+      "rationale": {
+        "title": "Rationale",
+        "type": "string"
+      },
+      "recommended_option": {
+        "title": "Recommended Option",
+        "type": "string"
+      },
+      "risk_register": {
+        "items": {
+          "$ref": "#/$defs/RiskEntry"
+        },
+        "title": "Risk Register",
+        "type": "array"
+      },
+      "tradeoffs": {
+        "items": {
+          "$ref": "#/$defs/Tradeoff"
+        },
+        "title": "Tradeoffs",
+        "type": "array"
+      }
+    },
+    "required": [
+      "decision_frame",
+      "options",
+      "tradeoffs",
+      "risk_register",
+      "recommended_option",
+      "rationale"
+    ],
+    "title": "FrameDecisionOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Frame decision",
+  "tool_version": "1.0.0"
+}

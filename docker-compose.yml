@@ -1,0 +1,25 @@
+services:
+  # Single service: REST API + MCP (stdio) + UIs.
+  # UI-1 Demo Console + UI-2 Approval Inbox are served by the API itself:
+  #   http://127.0.0.1:8000/ui  (root / redirects there)
+  app:
+    build: .
+    image: cognitive-mirror-jev-mcp:local
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      CM_DEPLOYMENT_MODE: ${CM_DEPLOYMENT_MODE:-local}
+      CM_DB_PATH: data/cognitive_mirror.db
+      CM_API_KEYS: ${CM_API_KEYS:-dev-agent-key:agent,dev-admin-key:admin,dev-compliance-key:compliance}
+      CM_REQUIRE_AUTH: "true"
+      CM_POLICY_PROFILE: ${CM_POLICY_PROFILE:-default}
+    volumes:
+      - cm-data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  cm-data:

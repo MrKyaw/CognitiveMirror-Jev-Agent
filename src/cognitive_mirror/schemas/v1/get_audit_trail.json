@@ -1,0 +1,251 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/get_audit_trail.json",
+  "description": "Governance only (admin, compliance): returns redacted audit records by request_id, trace or tool.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "filter_trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Filter Trace Id"
+      },
+      "limit": {
+        "default": 50,
+        "maximum": 500,
+        "minimum": 1,
+        "title": "Limit",
+        "type": "integer"
+      },
+      "request_id": {
+        "anyOf": [
+          {
+            "pattern": "^req_[0-9a-f]{32}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "tool": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Tool"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "GetAuditTrailInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "get_audit_trail",
+  "output": {
+    "$defs": {
+      "AuditRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id"
+          },
+          "caller_role": {
+            "title": "Caller Role",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "engine_mode": {
+            "title": "Engine Mode",
+            "type": "string"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "input_hash": {
+            "title": "Input Hash",
+            "type": "string"
+          },
+          "input_redacted": {
+            "additionalProperties": true,
+            "title": "Input Redacted",
+            "type": "object"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "number"
+          },
+          "model_version": {
+            "title": "Model Version",
+            "type": "string"
+          },
+          "output_redacted": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Redacted"
+          },
+          "policy_decision": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Decision"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tool": {
+            "title": "Tool",
+            "type": "string"
+          },
+          "tool_version": {
+            "title": "Tool Version",
+            "type": "string"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id",
+          "trace_id",
+          "session_id",
+          "tool",
+          "tool_version",
+          "caller_role",
+          "agent_id",
+          "status",
+          "error_code",
+          "engine_mode",
+          "model_version",
+          "input_hash",
+          "input_redacted",
+          "output_redacted",
+          "policy_decision",
+          "latency_ms",
+          "created_at"
+        ],
+        "title": "AuditRecord",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "title": "Count",
+        "type": "integer"
+      },
+      "records": {
+        "items": {
+          "$ref": "#/$defs/AuditRecord"
+        },
+        "title": "Records",
+        "type": "array"
+      }
+    },
+    "required": [
+      "records",
+      "count"
+    ],
+    "title": "GetAuditTrailOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "compliance"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": true,
+  "title": "Get audit trail",
+  "tool_version": "1.0.0"
+}

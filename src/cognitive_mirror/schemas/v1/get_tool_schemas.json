@@ -1,0 +1,86 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/get_tool_schemas.json",
+  "description": "Returns versioned JSON Schemas for tool inputs and outputs.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "tool": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Tool"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      }
+    },
+    "title": "GetToolSchemasInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "get_tool_schemas",
+  "output": {
+    "additionalProperties": false,
+    "properties": {
+      "schema_version": {
+        "title": "Schema Version",
+        "type": "string"
+      },
+      "tools": {
+        "additionalProperties": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Tools",
+        "type": "object"
+      }
+    },
+    "required": [
+      "schema_version",
+      "tools"
+    ],
+    "title": "GetToolSchemasOutput",
+    "type": "object"
+  },
+  "read_only": true,
+  "roles": [
+    "admin",
+    "agent",
+    "compliance"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Get tool schemas",
+  "tool_version": "1.0.0"
+}

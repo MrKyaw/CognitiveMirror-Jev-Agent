@@ -1,0 +1,166 @@
+{
+  "$id": "https://cognitive-mirror.dev/schemas/v1/memory_store.json",
+  "description": "Stores a consented memory item for a subject and returns an opaque memory_ref (mem_...). PII is redacted on write; items expire after the retention period. kind=context for short-term context, kind=profile for durable preferences.",
+  "input": {
+    "additionalProperties": false,
+    "properties": {
+      "consent": {
+        "default": false,
+        "description": "Must be true to store anything",
+        "title": "Consent",
+        "type": "boolean"
+      },
+      "content": {
+        "maxLength": 10000,
+        "minLength": 1,
+        "title": "Content",
+        "type": "string"
+      },
+      "kind": {
+        "default": "context",
+        "description": "context = short-term; profile = durable preference",
+        "enum": [
+          "context",
+          "profile"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "session_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Shared session for multi-agent orchestration; results are published to get_shared_context under this ID.",
+        "title": "Session Id"
+      },
+      "subject_id": {
+        "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+        "title": "Subject Id",
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 20,
+        "title": "Tags",
+        "type": "array"
+      },
+      "trace_id": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9._:\\-]{1,128}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Caller trace ID to correlate a multi-step workflow; generated if omitted.",
+        "title": "Trace Id"
+      },
+      "ttl_days": {
+        "anyOf": [
+          {
+            "maximum": 3650,
+            "minimum": 1,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Ttl Days"
+      }
+    },
+    "required": [
+      "subject_id",
+      "content"
+    ],
+    "title": "MemoryStoreInput",
+    "type": "object"
+  },
+  "kind": "lightweight",
+  "name": "memory_store",
+  "output": {
+    "additionalProperties": false,
+    "properties": {
+      "expires_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Expires At"
+      },
+      "kind": {
+        "title": "Kind",
+        "type": "string"
+      },
+      "memory_ref": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Memory Ref"
+      },
+      "reason": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "title": "Reason"
+      },
+      "redactions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Redactions",
+        "type": "array"
+      },
+      "stored": {
+        "title": "Stored",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "stored",
+      "memory_ref",
+      "kind",
+      "expires_at",
+      "redactions",
+      "reason"
+    ],
+    "title": "MemoryStoreOutput",
+    "type": "object"
+  },
+  "read_only": false,
+  "roles": [
+    "admin",
+    "agent"
+  ],
+  "schema_version": "1.0.0",
+  "sensitive": false,
+  "title": "Store memory",
+  "tool_version": "1.0.0"
+}
