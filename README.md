@@ -1,114 +1,81 @@
 # CognitiveMirror-Jev-MCP
 
-![version](https://img.shields.io/badge/version-1.1.0-blue)
-![tests](https://img.shields.io/badge/tests-passing-brightgreen)
-![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
-![lint](https://img.shields.io/badge/ruff-clean-brightgreen)
-![docker](https://img.shields.io/badge/docker-healthy-blue)
+![ci](https://github.com/MrKyaw/CognitiveMirror-Jev-MCP/actions/workflows/ci.yml/badge.svg)
+![license](https://img.shields.io/badge/license-Apache--2.0-blue)
 
-A reusable **cognitive services layer** for personal and enterprise AI agents —
-delivered as an MCP server, a REST API, and a web UI in a single container.
+Cognitive middleware for personal and enterprise agents, shipped as one
+container: an MCP server, a REST API, and a web UI.
 
-Any MCP-compatible agent can ask: *"What does this user really want, what matters
-most, what risks exist, and what action should I take next?"* — and get back
-structured intent, Jev persona/context intelligence, decision support, business
-impact, and safety guardrails.
-
-Implements [`CognitiveMirror-Jev-MCP_PRD.md`](CognitiveMirror-Jev-MCP_PRD.md).
-
----
+Agents call it to turn a raw user request into structured intent, Jev
+persona/context signals, a recommended next action with business impact, and a
+safety verdict — before they respond or act. Specified in
+[`CognitiveMirror-Jev-MCP_PRD.md`](CognitiveMirror-Jev-MCP_PRD.md).
 
 ## Contents
 
-- [Why it exists](#why-it-exists)
-- [How it works](#how-it-works)
+- [Architecture](#architecture)
 - [Quickstart](#quickstart)
-- [Web UIs](#web-uis)
-- [Tools reference](#tools-reference)
-- [Agent skills](#agent-skills)
+- [Interface](#interface)
 - [Configuration](#configuration)
-- [Testing](#testing)
-- [Container & Docker Hub](#container--docker-hub)
-- [Project structure](#project-structure)
+- [Verification](#verification)
+- [Repository layout](#repository-layout)
+- [Design decisions](#design-decisions)
 - [Roadmap](#roadmap)
+- [License](#license)
 
----
-
-## Why it exists
-
-Personal agents need more than generic chat. They need durable context, reflective
-reasoning, trustworthy action planning, and business-aware interpretation of user
-goals. CognitiveMirror-Jev-MCP sits **between the agent and the workflow** as
-cognitive middleware — it never replaces the agent; it serves it with tools,
-memory, reasoning support, context signals, and guardrails.
-
-| Business objective | What the product does |
-|---|---|
-| Improve personalization | Mirrors intent, constraints, goals, decision style |
-| Reduce repeated context gathering | Memory refs + shared session context across agents |
-| Standardize reasoning services | One versioned tool catalog for every agent |
-| Improve decision quality | Options, tradeoffs, risks, recommendations |
-| Enable safe action | PII redaction, policy profiles, human-approval gates |
-| Support enterprise adoption | Audit logs, role-based access, measurable ROI signals |
-
----
-
-## How it works
+## Architecture
 
 ```
-user request
-  └─► personal / enterprise agent (any MCP client)
-        ├─► mirror_user_intent      → intent, goals, constraints, urgency, ambiguities
-        ├─► build_jev_profile       → persona, journey, emotion, value, judgment
-        │     ├─ deterministic lexicon engine (always, offline)
-        │     └─ live System One jev cross-check (optional, TYPESAFE_API_KEY set)
-        ├─► check_guardrails        → allowed? risk? approval needed? safe alternative?
-        ├─► recommend_next_action   → executable instruction + impact + approval flag
-        ├─► frame_decision / assess_business_impact   (as needed)
-        └─► respond, log outcome, record feedback
+caller (MCP client, browser, or curl)
+  ├─ MCP (stdio / streamable-http) ── 14 tools, versioned JSON Schemas
+  ├─ REST ── /health · /v1/schemas · POST /v1/tools/{tool} · /v1/approvals/* · /ui
+  └─ dispatch (service.py): auth → validate → resolve memory → engine → audit → publish
+        ├─ engines (deterministic, offline): intent · jev · actions · decision · impact · guardrails
+        ├─ jev_live (optional): one System One fan-out cross-check per profile
+        └─ store: SQLite by default, PostgreSQL via CM_DATABASE_URL
 ```
 
-**Two Jev layers (§7.3).** The deterministic engine always runs offline. When
-`TYPESAFE_API_KEY` is set, `build_jev_profile` additionally runs one System One
-fan-out call (journey-stage choice + confidence noul, `CM_JEV_MODEL`, default
-`jev-latest`): the stage moves only on ≥ 0.6 live confidence and overall
-confidence blends with live decisiveness. Cost is input-only ($0.042/Mtok) and
-reported in warnings. Any live failure falls back silently — the envelope reads
-`engine.mode: hybrid` only when live Jev contributed, `deterministic` otherwise.
+The canonical agent flow (§13): `mirror_user_intent` → `build_jev_profile` →
+`check_guardrails` → `recommend_next_action`, plus `frame_decision` /
+`assess_business_impact` when the decision warrants it. Worked examples live in
+[`src/cognitive_mirror/examples/`](src/cognitive_mirror/examples/); agent-facing
+guides in [`skills/`](skills/).
 
----
+Two Jev layers (§7.3): the lexicon engine always runs offline. With
+`TYPESAFE_API_KEY` set, each profile additionally gets one System One call
+(journey-stage choice + confidence noul, `CM_JEV_MODEL`, default `jev-latest`).
+The live stage wins only at ≥ 0.6 confidence; overall confidence averages with
+live decisiveness; cost ($0.042/Mtok input-only) is reported in warnings. Any
+live failure keeps the deterministic result — the envelope reads
+`engine.mode: hybrid` only when live Jev contributed.
 
 ## Quickstart
 
-**Local (Python 3.12):**
+Prerequisites: Python 3.12 (local) or Docker (recommended).
 
 ```bash
+# local
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements-dev.txt
 export PYTHONPATH=$PWD/src
-make test          # unit tests — 100% coverage enforced
-make serve         # REST API on :8000
-make mcp           # MCP over stdio (Claude Desktop, etc.)
-make demo          # personal + enterprise agent walkthroughs
-```
+make test          # unit suite, 100% coverage enforced
+make serve         # REST on 127.0.0.1:8000
+make mcp           # MCP over stdio
+make demo          # personal + enterprise walkthroughs
 
-**Docker (recommended):**
-
-```bash
+# container
 docker compose up -d --build --wait
-bash tools/compose_smoke.sh     # → smoke OK
+bash tools/compose_smoke.sh
 ```
 
-Then open [`http://127.0.0.1:8000/ui`](http://127.0.0.1:8000/ui).
+Then open `http://127.0.0.1:8000/ui`.
 
-**Call the API directly:**
+PostgreSQL instead of SQLite:
 
 ```bash
-curl -X POST 127.0.0.1:8000/v1/tools/mirror_user_intent \
-  -H 'X-API-Key: dev-agent-key' -H 'Content-Type: application/json' \
-  -d '{"user_message":"Draft a follow-up email to my hiring manager for tomorrow"}'
+CM_DATABASE_URL=postgresql://cm:cm@db:5432/cm docker compose --profile postgres up -d --build --wait
 ```
 
-**Claude Desktop (MCP stdio):**
+Claude Desktop:
 
 ```json
 {"mcpServers": {"cognitive-mirror": {
@@ -118,135 +85,99 @@ curl -X POST 127.0.0.1:8000/v1/tools/mirror_user_intent \
 }}}
 ```
 
----
+## Interface
 
-## Web UIs
+**Core tools** (every workflow): `mirror_user_intent` ·
+`build_jev_profile` · `recommend_next_action` · `frame_decision` ·
+`assess_business_impact` · `check_guardrails`.
 
-Served by the same container — no extra service. Root `/` redirects to `/ui`.
+**Support**: `memory_store` · `memory_recall` · `memory_forget`
+(consent-gated, PII-redacted, expiring) · `get_shared_context` ·
+`record_feedback` · `get_tool_schemas` · `get_audit_trail` and
+`list_policy_profiles` (admin/compliance only).
 
-| UI | URL | Purpose |
-|---|---|---|
-| UI-1 Demo Console | [`/ui`](http://127.0.0.1:8000/ui) tab 1 | One query box runs the full workflow live; renders mirror summary, Jev signals, guardrail badge, next action, decision, business impact |
-| UI-2 Approval Inbox | [`/ui`](http://127.0.0.1:8000/ui) tab 2 | Human-in-the-loop queue for every `human_approval_required` result — approve/reject with reason, audit-logged; `GET /v1/approvals`, `POST /v1/approvals/{id}/decision` |
+Roles: `agent` · `admin` · `compliance`. Policies: `default` → `strict` →
+`enterprise`. Full contracts: [`test_cases.md`](test_cases.md); measured
+results: [`test_results.md`](test_results.md).
 
----
+**UIs** (same container, `/` redirects to `/ui`): UI-1 Demo Console runs the
+full workflow from one query box; UI-2 Approval Inbox queues every
+`human_approval_required` result for approve/reject with reason
+(`GET /v1/approvals`, `POST /v1/approvals/{id}/decision`, audit-logged).
 
-## Tools reference
+Direct call example:
 
-**Core (every agent workflow):**
-
-| Tool | Returns |
-|---|---|
-| `mirror_user_intent` | intent labels, explicit/implicit goals, constraints, urgency, ambiguities + clarifications, conflicts, mirror summary, response strategy |
-| `build_jev_profile` | persona signals, journey stage, emotions, value drivers, judgment context, autonomy safeguards |
-| `recommend_next_action` | recommended action, alternatives, business impact, risks, approval flag, agent instruction |
-| `frame_decision` | decision frame, scored options, tradeoffs, risk register, recommendation + rationale |
-| `assess_business_impact` | category, benefits, metrics with baseline/delta, cost/effort, ROI hypothesis, 0–100 priority |
-| `check_guardrails` | allowed, risk level, issues, redactions, approval flag, safe alternative |
-
-**Support:** `memory_store` · `memory_recall` · `memory_forget` (consent-gated, PII-redacted, expiring) ·
-`get_shared_context` (multi-agent sessions) · `record_feedback` · `get_tool_schemas` (versioned) ·
-`get_audit_trail` + `list_policy_profiles` (admin/compliance only).
-
-Role model: `agent` · `admin` · `compliance`. Policy profiles: `default` → `strict` → `enterprise`.
-
----
-
-## Agent skills
-
-Copy-pasteable guides in [`skills/`](skills/) — intent mirroring first,
-Jev profiling, decision support, guardrails & governance — plus [`test_cases.md`](test_cases.md)
-and [`test_results.md`](test_results.md).
-
----
+```bash
+curl -X POST 127.0.0.1:8000/v1/tools/mirror_user_intent \
+  -H 'X-API-Key: dev-agent-key' -H 'Content-Type: application/json' \
+  -d '{"user_message":"Draft a follow-up email to my hiring manager for tomorrow"}'
+```
 
 ## Configuration
 
-| Variable | Default | Purpose |
+| Variable | Default | Notes |
 |---|---|---|
-| `CM_DEPLOYMENT_MODE` | `local` | `local` / `private_cloud` / `enterprise` (enterprise refuses dev keys) |
-| `CM_DB_PATH` | `data/cognitive_mirror.db` | SQLite: memory, audit, shared context, approvals |
-| `CM_DATABASE_URL` | — | Optional PostgreSQL backend (`postgresql://…`, takes precedence over SQLite) |
-| `CM_API_KEYS` | dev keys | `<key>:<agent\|admin\|compliance>` pairs |
-| `CM_REQUIRE_AUTH` | `true` | Require API keys on REST |
+| `CM_DB_PATH` | `data/cognitive_mirror.db` | SQLite store |
+| `CM_DATABASE_URL` | — | `postgresql://…` selects Postgres instead |
+| `CM_API_KEYS` | dev keys | `<key>:<role>` pairs; enterprise mode refuses dev keys |
 | `CM_POLICY_PROFILE` | `default` | `default` / `strict` / `enterprise` |
-| `CM_JEV_CONFIG` | — | Optional Jev dimension override JSON |
-| `TYPESAFE_API_KEY` | — | Optional: enables live System One / Jev cross-check |
-| `CM_JEV_MODEL` | `jev-latest` | Live Jev model |
-| `CM_LLM_PROVIDER` | `none` | Optional LLM enricher (off by default) |
-| `CM_ALLOWED_HOSTS` | — | Host allowlist (DNS-rebinding protection) |
+| `CM_JEV_CONFIG` | — | Jev dimension override JSON |
+| `TYPESAFE_API_KEY` | — | Enables the live System One cross-check |
+| `CM_JEV_MODEL` | `jev-latest` | Live model |
+| `CM_ALLOWED_HOSTS` | — | Host allowlist |
 
-See [`.env.example`](.env.example) for the full list.
+Full list: [`.env.example`](.env.example). Never commit `.env`.
 
----
+## Verification
 
-## Testing
-
-100% statement + branch coverage is enforced (`--cov-fail-under=100`).
-
-| Command | Scope |
-|---|---|
-| `make test` | Unit suite — 54 passed |
-| `make e2e` | PRD workflows + MCP discovery — 3 passed |
-| `make perf` | Lightweight < 1.5 s, deep < 5 s, 20-way concurrency — 3 passed |
-| `make container-test` | Live container smoke + checks — 2 passed |
-| `make lint` | Ruff clean |
-| `PYTHONPATH=src python -m cognitive_mirror.schemas --check` | Schema drift check |
-
----
-
-## Container & Docker Hub
+100% statement + branch coverage is enforced in CI and locally
+(`--cov-fail-under=100`). Current state: 62 unit tests green, e2e 3, perf 3
+(< 1.5 s lightweight, < 5 s deep, 20-way concurrency), live-Postgres 1,
+container 2, Ruff clean, committed schemas byte-identical to models.
 
 ```bash
-make docker-build && make up && make compose-smoke && make down
+make test && make e2e && make perf && make lint
+PYTHONPATH=src python -m cognitive_mirror.schemas --check
+CM_TEST_POSTGRES_URL=postgresql://… make postgres-test
 ```
 
-Publish / run from Docker Hub:
+CI (`.github/workflows/ci.yml`) repeats all of this plus a Docker build,
+smoke, and container tests on every push and PR.
 
-```bash
-docker build -t <yourhub>/cognitive-mirror-jev-mcp:1.0.0 .
-docker push <yourhub>/cognitive-mirror-jev-mcp:1.0.0
-docker run -d -p 8000:8000 -e CM_API_KEYS=... -v cm-data:/app/data \
-  <yourhub>/cognitive-mirror-jev-mcp:1.0.0
-```
-
-Health: `GET /health` · Smoke: `tools/compose_smoke.sh` · Data persists in the `cm-data` volume.
-
-PostgreSQL instead of SQLite:
-
-```bash
-CM_DATABASE_URL=postgresql://cm:cm@db:5432/cm docker compose --profile postgres up -d --build --wait
-```
-
-CI (`.github/workflows/ci.yml`) runs the unit suite with the 100% gate,
-e2e/perf/postgres, Ruff, schema check, and a full Docker build + smoke on every
-push and pull request. Changes are recorded in [CHANGELOG.md](CHANGELOG.md).
-
----
-
-## Project structure
+## Repository layout
 
 ```
-src/cognitive_mirror/
-  api.py  mcp_server.py  service.py  store.py      # delivery + dispatch + persistence
-  catalog.py  models.py  schemas.py  config.py     # contracts, schemas, settings
-  engine/  intent.py  jev.py  actions.py  decision.py  impact.py  guardrails.py
-  jev_live.py                                       # optional System One cross-check
-  ui.html                                           # UI-1 console + UI-2 inbox
-  examples/  personal_agent.py  enterprise_agent.py
-skills/  tests/  tools/  test_cases.md  test_results.md
-CognitiveMirror-Jev-MCP_PRD.md  README.md  LICENSE
-Dockerfile  docker-compose.yml  pyproject.toml  requirements.txt  .env.example  Makefile
+src/cognitive_mirror/  api · mcp_server · service · store · jev_live · ui.html
+                       catalog · models · schemas · config · engine/ · examples/
+skills/                per-workflow agent guides
+tests/                 unit · e2e · perf · postgres · container
+test_cases.md  test_results.md  CHANGELOG.md
+Dockerfile  docker-compose.yml  pyproject.toml  Makefile
 ```
 
----
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the change workflow and
+[SECURITY.md](SECURITY.md) for vulnerability reporting.
+
+## Design decisions
+
+- **Deterministic first.** Rule/lexicon engines are the source of truth; live
+  models only cross-check. The system is fully usable air-gapped.
+- **Contracts before transports.** Pydantic models generate the MCP schemas,
+  the REST validation, and the committed `schemas/v1/` files from one place.
+- **One placeholder style.** SQL is written once with `?`; the store
+  translates for Postgres. Same tables, same semantics, both backends.
+- **Advisory guardrails, enforced workflow.** The server judges and redacts;
+  the calling agent (or the inbox human) decides. High-impact paths require
+  explicit approval by design, not by convention.
+- **No PII at rest in the clear.** Writes are redacted, reads are refs, audit
+  is redacted, enterprise refuses dev keys.
 
 ## Roadmap
 
-- **Phase 1 (done):** schemas, 6 core tools, guardrails, audit, Demo Console, Approval Inbox, live-Jev option, reference demos
-- **Phase 2:** RBAC hardening, configurable policies, UI-3 Governance Dashboard, evaluation harness, multi-agent examples
-- **Phase 3:** advanced Jev scoring, feedback learning, workflow playbooks, marketplace packaging
+- **1.0** (done): tools, guardrails, audit, console, inbox, live-Jev option
+- **1.1** (done): Postgres backend, CI, changelog
+- Next: UI-3 governance dashboard, evaluation harness, feedback learning
 
 ## License
 
-Apache-2.0 — see [LICENSE](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+Apache-2.0 — see [LICENSE](LICENSE).
