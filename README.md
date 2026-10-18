@@ -181,3 +181,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the change workflow and
 ## License
 
 Apache-2.0 — see [LICENSE](LICENSE).
+
+## About
+
+![CognitiveMirror-Jev-MCP overview](images/overview.png)
+
+*Personal and enterprise cognitive middleware — one container, 14 tools, SQLite/Postgres, deterministic + live Jev, UI-1 console and UI-2 inbox. Shipped as an Apache-2.0 project by a distinguished engineer.*
