@@ -187,3 +187,7 @@ Apache-2.0 — see [LICENSE](LICENSE).
 ![CognitiveMirror-Jev-MCP overview](images/overview.png)
 
 *Personal and enterprise cognitive middleware — one container, 14 tools, SQLite/Postgres, deterministic + live Jev, UI-1 console and UI-2 inbox. Shipped as an Apache-2.0 project by a distinguished engineer.*
+
+⭐ Star this repo if you find it useful! ⭐
+
+Report Bug · Request Feature · Ask Question
