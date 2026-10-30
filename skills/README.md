@@ -2,6 +2,8 @@
 
 Agent-facing guides for calling CognitiveMirror-Jev-MCP tools in the right order.
 
+![CognitiveMirror-Jev-MCP skills logo](skills_logo.png)
+
 | Skill | Use when | Key tools |
 |---|---|---|
 | [cognitive-mirroring](cognitive-mirroring/SKILL.md) | Every new user request — structure intent first | `mirror_user_intent` |
